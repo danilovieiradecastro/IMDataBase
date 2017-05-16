@@ -26,7 +26,8 @@ public:
 	void addRow(std::string row);
 	bool deleteRow(std::string chave);
 	void createIndex(std::string columns[],int size);
-	std::string findRow(std::string chave); 
+	std::string findRow(std::string chave);
+	int countByColumn(std::string columName, std::string keyValue);
 #ifdef COUNT_COLISAO
 	int getTotalColisoes();
 

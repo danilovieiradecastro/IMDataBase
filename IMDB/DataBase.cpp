@@ -67,7 +67,51 @@ void Tabela::addRow(std::string row[], int size)
 	if (data != "")
 		this->addRow(data);
 }
+int Tabela::countByColumn(std::string columName, std::string keyValue)
+{//realiza o select count por alguma coluna
+#ifdef MEDIR_TEMPO
+	std::clock_t start = std::clock();
+#endif
+	int columnsFind = 0;
+	int idxColuna =this->getColumnIndex(columName);
+	if (idxColuna > -1)
+	{
+		if (this->indexPK)
+		{
+			if (this->countColunasIdx == 1 && this->idxColunas[0] == idxColuna)
+			{// o usuario está buscando pela PK da tabela.
 
+				if (this->indexPK->getByString(keyValue))
+				{
+					columnsFind++;
+				}
+			}
+			else
+			{
+
+				ResgistroHash* r = this->indexPK->getFirstRegister();
+
+				while (r)
+				{
+					LinhaTabela* l = (LinhaTabela*)r->getValue();
+					if (l->getString(idxColuna) == keyValue)
+					{
+						columnsFind++;
+					}
+					r = this->indexPK->getNextRegister(r);
+				}
+			}
+
+		}
+	}
+
+#ifdef MEDIR_TEMPO
+	double duration = (std::clock() - start) / (double)CLOCKS_PER_SEC;
+   std::cout << "tempo de busca na tabela " << " " << duration << " ms" << std::endl;
+#endif
+	return columnsFind;
+
+}
 //adicona uma string separado por \t no buffer da tabela
 //este metodo deverá ser utilizado quando estamos importando do arquivo ou quando estamos inserindo o dado já com os separadores
 void Tabela::addRow(std::string row)
@@ -111,7 +155,7 @@ bool Tabela::deleteRow(std::string chave)
 	}
 #ifdef MEDIR_TEMPO
 	double duration = (std::clock() - start) / (double)CLOCKS_PER_SEC;
-	cout << "tempo de remoção da tabela " << " " << duration << " ms" << endl;
+	std::cout << "tempo de remoção da tabela " << " " << duration << " ms" << std::endl;
 #endif
 	return retorno;
 }

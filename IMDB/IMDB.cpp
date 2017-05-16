@@ -37,6 +37,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		cout << "4 - consultar dados de uma tabela pela chave primaria" << endl;
 		cout << "5 - inserir em uma tabela" << endl;
 		cout << "6 - remover linha de uma tabela" << endl;
+		cout << "7 - contar registros da tabela (SELECT COUNT)" << endl;
 		cout << "9 - sair" << endl;
 		
 		getline(cin, str);
@@ -225,11 +226,76 @@ int _tmain(int argc, _TCHAR* argv[])
 				getline(cin, str);
 			    if (!tabl->deleteRow(str))
 				{
-					cout << "não foi possivel encontrar a linha com a chave:" << str << endl;
+					cout << "não foi possivel encontrar a linha com a chave: " << str << endl;
+				}
+				else
+				{
+					cout << "linha removida com sucesso:"<< endl;
 				}
 				
 				system("pause");
 			}
+			break;
+		case 7:
+			system("CLS");
+			tabl = NULL;
+			while (tabl == NULL)
+			{
+
+
+				cout << "digite o nome da tabela (digite X para sair):" << endl;
+				getline(cin, nomeTabela);
+
+				tabl = db->findTable(nomeTabela);
+
+				if (nomeTabela == "X")
+				{
+					break;
+				}
+				else if (tabl == NULL)
+				{
+					cout << "nome invalido" << endl;
+				}
+			}
+			if (tabl)
+			{
+				nomeColuna = "";
+				while (nomeColuna != "X")
+				{
+					cout << "digite o nome da coluna de busca (digite X para contar todos os registros): " << endl;
+					getline(cin, nomeColuna);
+					if (nomeColuna == "")
+					{
+						cout << "nome da coluna invalido " << endl;
+					}
+					else if (nomeColuna != "X")
+					{
+						if (tabl->getColumnIndex(nomeColuna) < 0)
+						{
+							cout << "nome da coluna invalido " << endl;
+						}
+						else
+						{
+							break;
+						}
+					}
+
+				}
+				
+				if (nomeColuna == "X")
+				{
+					cout << nomeTabela << " " << tabl->getRowCount() << " Registros" << endl;
+				}
+				else
+				{
+					cout << "digite a chave de busca para contar os registros:" << endl;
+					getline(cin, str);
+					cout << nomeTabela << " " << tabl->countByColumn(nomeColuna, str) << " Registros encontrados" << endl;
+					
+				}	
+				system("pause");
+			}
+			
 			break;
 		case 9:
 			execute = false;
