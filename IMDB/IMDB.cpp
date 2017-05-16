@@ -34,9 +34,10 @@ int _tmain(int argc, _TCHAR* argv[])
 			cout << "2 - carregar de um arquivo especifico." << endl;
 		}
 		cout << "3 - criar uma tabela" << endl;
-		cout << "4 - consultar dados de uma tabela" << endl;
+		cout << "4 - consultar dados de uma tabela pela chave primaria" << endl;
 		cout << "5 - inserir em uma tabela" << endl;
-		cout << "6 - sair" << endl;
+		cout << "6 - remover linha de uma tabela" << endl;
+		cout << "9 - sair" << endl;
 		
 		getline(cin, str);
 		long int option = strtol(str.c_str(),NULL,0);
@@ -196,7 +197,41 @@ int _tmain(int argc, _TCHAR* argv[])
 				tabl->addRow(buff,i);
 			}
 			break;
+
 		case 6:
+			system("CLS");
+			tabl = NULL;
+			while (tabl == NULL)
+			{
+
+
+				cout << "digite o nome da tabela (digite X para sair):" << endl;
+				getline(cin, nomeTabela);
+
+				tabl = db->findTable(nomeTabela);
+
+				if (nomeTabela == "X")
+				{
+					break;
+				}
+				else if (tabl == NULL)
+				{
+					cout << "nome invalido" << endl;
+				}
+			}
+			if (tabl)
+			{
+				cout << "digite a chave de busca (digite o valor de todos os campos juntos sem espaço) para remover o registro:" << endl;
+				getline(cin, str);
+			    if (!tabl->deleteRow(str))
+				{
+					cout << "não foi possivel encontrar a linha com a chave:" << str << endl;
+				}
+				
+				system("pause");
+			}
+			break;
+		case 9:
 			execute = false;
 			break;
 		default:

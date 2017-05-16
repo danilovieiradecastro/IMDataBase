@@ -96,6 +96,27 @@ void Tabela::addRow(std::string row)
 	}
 	rowCount++; 
 }
+
+bool Tabela::deleteRow(std::string chave)
+{
+#ifdef MEDIR_TEMPO
+	std::clock_t start = std::clock();
+#endif
+	bool retorno = false;
+	if (this->indexPK != NULL)
+	{
+		retorno =this->indexPK->removeByString(chave);
+		if (retorno)//decrementa o contatodor total
+			rowCount--;
+	}
+#ifdef MEDIR_TEMPO
+	double duration = (std::clock() - start) / (double)CLOCKS_PER_SEC;
+	cout << "tempo de remoção da tabela " << " " << duration << " ms" << endl;
+#endif
+	return retorno;
+}
+
+
 //metodo de busca na tabela, atualmente só busca através da chave primára e se foi especificado a primary key corretamente.
 std::string Tabela::findRow(std::string chave)
 {

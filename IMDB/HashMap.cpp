@@ -244,10 +244,18 @@ void HashMap::insert(unsigned int key, void* val)
     if (size >= maxSize)
             resize();
 }
- //remove um registro da tabela, metodo implementado, porem não testado ainda.
-void HashMap::remove(unsigned int  key) 
+
+bool HashMap::removeByString(std::string key)
+{
+	unsigned int intKey = convertStringToInt(key);
+	return remove(intKey);
+}
+
+ //remove um registro da tabela, utilizand a chave inteira.
+bool HashMap::remove(unsigned int  key) 
 {
     int hash = (key % tableSize);
+	bool retorno = false;
     if (table[hash] != NULL) 
 	{
         ResgistroHash *prevEntry = NULL;
@@ -272,8 +280,10 @@ void HashMap::remove(unsigned int  key)
                 prevEntry->setNext(next);
             }
             size--;
+			retorno = true;
         }
     }
+	return retorno;
 }
 
 

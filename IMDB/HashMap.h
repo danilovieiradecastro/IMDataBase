@@ -36,7 +36,7 @@ private:
       ResgistroHash **table;
 	 
  void	insert(unsigned int  key, void* val);
-  void remove(unsigned int  key) ;
+  bool remove(unsigned int  key) ;
   void* get(unsigned int  key);
       void resize();
  unsigned int convertStringToInt(std::string key);
@@ -49,7 +49,7 @@ public:
 	 void	insertString(std::string key, void* val);
       
 	void*	getByString(std::string key);
-
+	bool removeByString(std::string key);
      ResgistroHash* getFirstRegister();
 	   ResgistroHash* getNextRegister(ResgistroHash* st);
   

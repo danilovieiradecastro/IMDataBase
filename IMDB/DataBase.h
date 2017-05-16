@@ -24,6 +24,7 @@ public:
 	int getRowCount();
 	void addRow(std::string row[],int size);
 	void addRow(std::string row);
+	bool deleteRow(std::string chave);
 	void createIndex(std::string columns[],int size);
 	std::string findRow(std::string chave); 
 #ifdef COUNT_COLISAO
