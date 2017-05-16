@@ -5,7 +5,7 @@
 
 
 //#define COUNT_COLISAO   //define para obter o contador de coliões de cada registro hash
-#define MEDIR_TEMPO //define para obter as medições de tempo
+//#define MEDIR_TEMPO //define para obter as medições de tempo
 
 #include <stdio.h>
 #include <tchar.h>
