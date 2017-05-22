@@ -3,11 +3,24 @@
 #include <string>
 #include "Vector.h"
 #include "HashMap.h"
+class Tabela;
+class ForeingKey
+{
+	Tabela* tabDest;
+	std::string* keys;
+	int keysCount;
+public:
+	ForeingKey(std::string* keys, int size, Tabela* tab);
+	~ForeingKey();
+	std::string* getKeys();
+	int getKeyCount();
+};
 class Tabela
 {
 	std::string Nome;
 	Vector* listaColunas;
 	Vector* listaLinhasSemIndex;
+	Vector* listaFKs;
 	int rowCount;
 	HashMap* indexPK;
 	void popularIndex(int idxcolunas[],int size);
@@ -28,6 +41,8 @@ public:
 	void createIndex(std::string columns[],int size);
 	std::string findRow(std::string chave);
 	int countByColumn(std::string columName, std::string keyValue);
+	void createFK(std::string* colunas, int colCount, Tabela* tabelaDestino);
+	std::string innerJoin(Tabela* tabDest, bool onlyCount);
 #ifdef COUNT_COLISAO
 	int getTotalColisoes();
 

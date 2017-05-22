@@ -38,6 +38,9 @@ int _tmain(int argc, _TCHAR* argv[])
 		cout << "5 - inserir em uma tabela" << endl;
 		cout << "6 - remover linha de uma tabela" << endl;
 		cout << "7 - contar registros da tabela (SELECT COUNT)" << endl;
+		cout << "8 - Realizar Inner Join" << endl;
+
+		
 		cout << "9 - sair" << endl;
 		
 		getline(cin, str);
@@ -297,6 +300,55 @@ int _tmain(int argc, _TCHAR* argv[])
 			}
 			
 			break;
+		case 8:
+			system("CLS");
+			tabl = NULL;
+			while (tabl == NULL)
+			{
+
+
+				cout << "digite o nome da tabela (digite X para sair):" << endl;
+				getline(cin, nomeTabela);
+
+				tabl = db->findTable(nomeTabela);
+
+				if (nomeTabela == "X")
+				{
+					break;
+				}
+				else if (tabl == NULL)
+				{
+					cout << "nome invalido" << endl;
+				}
+			}
+			if (tabl)
+			{
+				Tabela* tablDest = NULL;
+				while (tablDest == NULL)
+				{
+
+
+					cout << "digite o nome da tabela Destino (digite X para sair):" << endl;
+					getline(cin, nomeTabela);
+
+					tablDest = db->findTable(nomeTabela);
+
+					if (nomeTabela == "X")
+					{
+						break;
+					}
+					else if (tabl == NULL)
+					{
+						cout << "nome invalido" << endl;
+					}
+				}
+				if (tablDest)
+				{
+					cout << tabl->innerJoin(tablDest, true);
+				}
+			}
+			break;
+
 		case 9:
 			execute = false;
 			break;

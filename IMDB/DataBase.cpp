@@ -19,6 +19,7 @@ Tabela::Tabela()
 	 this->rowCount=0;
 	 this->indexPK = NULL;
 	 this->idxColunas = NULL;
+	 this->listaFKs = new Vector();
 }
 Tabela::~Tabela()
 {
@@ -112,6 +113,71 @@ int Tabela::countByColumn(std::string columName, std::string keyValue)
 	return columnsFind;
 
 }
+void Tabela::createFK(std::string * colunas, int colCount, Tabela * tabelaDestino)
+{
+	ForeingKey *fk = new ForeingKey(colunas, colCount, tabelaDestino);
+	this->listaFKs->add(tabelaDestino->getNome(), fk);
+}
+std::string Tabela::innerJoin(Tabela * tabDest, bool onlyCount)
+{
+#ifdef MEDIR_TEMPO
+	std::clock_t start = std::clock();
+#endif
+	std::string retorno;
+	ForeingKey* fk = (ForeingKey*)this->listaFKs->find(tabDest->getNome());
+	int count = 0;
+	if (fk)
+	{
+		ResgistroHash* r = this->indexPK->getFirstRegister();
+		int x = 0;
+		while (r)
+		{
+			LinhaTabela* l = (LinhaTabela*)r->getValue();
+			std::string chaveBusca = "";
+			x = 0;
+			while (x < fk->getKeyCount())
+			{
+				std::string key = fk->getKeys()[x];
+				int idxColuna = this->getColumnIndex(key);
+				chaveBusca += l->getString(idxColuna);
+				x++;
+			}
+			std::string Aux = tabDest->findRow(chaveBusca);
+			if (Aux != "")
+			{ 
+				if (onlyCount)
+				{
+					count++;
+				}
+				else
+		    	retorno += l->dataArray + Aux +"\r\n";
+			}
+			r = this->indexPK->getNextRegister(r);
+		}
+
+
+		if (onlyCount)
+		{
+			
+			retorno = std::to_string(count) + " Registros Encontrados \r\n";
+		}
+		else
+		{
+
+
+		}
+	}
+	else
+	{
+		retorno = "Não existe FK para as tabelas";
+	}
+#ifdef MEDIR_TEMPO
+	double duration = (std::clock() - start) / (double)CLOCKS_PER_SEC;
+	std::cout << "tempo de busca na tabela " << " " << duration << " ms" << std::endl;
+#endif
+	return retorno;
+}
+
 //adicona uma string separado por \t no buffer da tabela
 //este metodo deverá ser utilizado quando estamos importando do arquivo ou quando estamos inserindo o dado já com os separadores
 void Tabela::addRow(std::string row)
@@ -184,7 +250,7 @@ std::string retorno = "";
 		}
 		else
 		{
-				cout <<"chave não encontrada "<<endl;
+			//	cout <<"chave não encontrada "<<endl;
 		}
 	}
 #ifdef MEDIR_TEMPO
@@ -517,6 +583,49 @@ void DataBase::criarDBArquivo(std::string path)
 				
 					 alterandoTabela =false;
 				  }
+				  else if ((found =line.find("FOREIGN KEY (") )!= string::npos)
+				  {//precisamos criar uma FK desta tabela;
+
+					  string colunaModificar = line.substr(found + 13, line.size() - (found + 13));
+					  colunaModificar = colunaModificar.substr(0, colunaModificar.find_last_of(")"));
+					  colunaModificar = colunaModificar.substr(0, colunaModificar.find_last_of(")"));
+					  pch = (char*)colunaModificar.c_str();
+					  string* colunasOrigem = new string[tabl->getCoulumCount()];
+					  int i = 0;
+					  while (pch)
+					  {
+						  pchAux = strchr(pch, ',');
+						  while (isspace(*pch))
+							  pch++;
+						  if (pchAux)
+						  {
+
+							  colunasOrigem[i] = colunaModificar.substr(pch - colunaModificar.c_str(), pchAux - pch);
+							  pchAux++;
+						  }
+						  else
+							  colunasOrigem[i] = colunaModificar.substr(pch - colunaModificar.c_str(), colunaModificar.size());
+
+						  pch = pchAux;
+						  i++;
+					  }
+
+					  found = line.find("REFERENCES ");
+					  string tabelaModificar = line.substr(found + 11, line.size());
+					  found = tabelaModificar.find_first_of("(");
+					  found = found == string::npos ? tabelaModificar.size() : found;
+					  tabelaModificar = tabelaModificar.substr(0, found);
+					  Tabela* tabDest = this->findTable(tabelaModificar);
+					  if (tabDest)
+					  {
+						  tabl->createFK(colunasOrigem, i, tabDest);
+					  }
+					  else
+					  { 
+						  cout << "Erro aou criar a FK";
+					  }
+					  alterandoTabela = false;
+				  }
 				 
 			  }
 		  }
@@ -549,4 +658,25 @@ void DataBase::criarDBArquivo(std::string path)
     }
   else cout <<"não foi possivel abrir o arquivo"<<endl;
 
+}
+
+ForeingKey::ForeingKey(std::string * keys, int size, Tabela * tab)
+{
+	this->keys = keys;
+	this->keysCount = size;
+	this->tabDest = tab;
+}
+
+ForeingKey::~ForeingKey()
+{
+}
+
+std::string* ForeingKey::getKeys()
+{
+	return this->keys;
+}
+
+int ForeingKey::getKeyCount()
+{
+	return this->keysCount;
 }
