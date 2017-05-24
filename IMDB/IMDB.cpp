@@ -40,15 +40,16 @@ int _tmain(int argc, _TCHAR* argv[])
 		cout << "7 - contar registros da tabela (SELECT COUNT)" << endl;
 		cout << "8 - Realizar Inner Join" << endl;
 
+		cout << "9 - Realizar Left Outer Join" << endl;
+		cout << "A - Realizar Rigt Outer Join" << endl;
+		cout << "X - sair" << endl;
 		
-		cout << "9 - sair" << endl;
 		
+		char option = getchar();
 		getline(cin, str);
-		long int option = strtol(str.c_str(),NULL,0);
-	
 		switch (option)
 		{
-		case (1):
+		case ('1'):
 			if (!opcaoCarregar)
 			{
 				system("CLS"); 
@@ -61,7 +62,7 @@ int _tmain(int argc, _TCHAR* argv[])
 				db->criarDBArquivo("");
 			}
 			break;
-		case 2:
+		case '2':
 			if (!opcaoCarregar)
 			{
 				system("CLS");
@@ -75,7 +76,7 @@ int _tmain(int argc, _TCHAR* argv[])
 				db->criarDBArquivo(str);
 			}
 			break;
-		case 3:
+		case '3':
 			nomeColuna = "";
 			nomeTabela = "";
 			system("CLS");
@@ -128,7 +129,7 @@ int _tmain(int argc, _TCHAR* argv[])
 			}
 			
 			break;
-		case 4 :
+		case '4' :
 			system("CLS");
 			tabl = NULL;
 			while (tabl == NULL)
@@ -159,7 +160,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 			system("CLS");
 			break;
-		case 5 :
+		case '5' :
 			system("CLS");
 			tabl = NULL;
 			while (tabl == NULL)
@@ -202,7 +203,7 @@ int _tmain(int argc, _TCHAR* argv[])
 			}
 			break;
 
-		case 6:
+		case '6':
 			system("CLS");
 			tabl = NULL;
 			while (tabl == NULL)
@@ -239,7 +240,7 @@ int _tmain(int argc, _TCHAR* argv[])
 				system("pause");
 			}
 			break;
-		case 7:
+		case '7':
 			system("CLS");
 			tabl = NULL;
 			while (tabl == NULL)
@@ -300,7 +301,10 @@ int _tmain(int argc, _TCHAR* argv[])
 			}
 			
 			break;
-		case 8:
+		case '8':
+		case '9':
+		case 'a':
+		case 'A':
 			system("CLS");
 			tabl = NULL;
 			while (tabl == NULL)
@@ -344,12 +348,24 @@ int _tmain(int argc, _TCHAR* argv[])
 				}
 				if (tablDest)
 				{
-					cout << tabl->innerJoin(tablDest, true);
+					cout << "digite T para exibir apena o contador de registros" << endl;
+		
+					getline(cin, str);
+					bool val = (str == "T") || str == "t";
+					if (option == '8')
+					  cout << tabl->innerJoin(tablDest, val);
+					else if (option == '9')
+					  cout << tabl->leftJoin(tablDest, val);
+					else if (option == 'a'|| option == 'A')
+						cout << tabl->rightJoin(tablDest, val);
+
+
 				}
 			}
 			break;
-
-		case 9:
+		
+		
+		case 'X':
 			execute = false;
 			break;
 		default:

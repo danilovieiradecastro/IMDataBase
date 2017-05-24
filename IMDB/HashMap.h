@@ -9,6 +9,7 @@ private:
 #ifdef COUNT_COLISAO
 	  short colisionCount;
 #endif
+	  bool visited;
 public:
       ResgistroHash(unsigned int  key, void* val);
       unsigned int getKey();
@@ -18,7 +19,8 @@ public:
       void setValue(void* value);
  
       ResgistroHash *getNext();
- 
+	  bool isVisited();
+	  void setVisited(bool val);
       void setNext(ResgistroHash *next);
 	  #ifdef COUNT_COLISAO
 	  void addColision(int val);
@@ -37,18 +39,20 @@ private:
 	 
  void	insert(unsigned int  key, void* val);
   bool remove(unsigned int  key) ;
-  void* get(unsigned int  key);
+  ResgistroHash* get(unsigned int  key);
       void resize();
  unsigned int convertStringToInt(std::string key);
 public:
       HashMap(int sizeInicial);
 	
 	 void setLimite(float limite); 
- 
+	 void clearVisiteds();
       
 	 void	insertString(std::string key, void* val);
       
 	void*	getByString(std::string key);
+
+	ResgistroHash* getRegisterByString(std::string key);
 	bool removeByString(std::string key);
      ResgistroHash* getFirstRegister();
 	   ResgistroHash* getNextRegister(ResgistroHash* st);

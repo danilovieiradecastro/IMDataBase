@@ -26,6 +26,7 @@ class Tabela
 	void popularIndex(int idxcolunas[],int size);
 	int* idxColunas;
 	short countColunasIdx;
+	std::string findRowInternal(std::string chave, bool makrRegister =false);
 public:
 	void setNome(std::string val);
 	std::string getNome();
@@ -43,6 +44,8 @@ public:
 	int countByColumn(std::string columName, std::string keyValue);
 	void createFK(std::string* colunas, int colCount, Tabela* tabelaDestino);
 	std::string innerJoin(Tabela* tabDest, bool onlyCount);
+	std::string leftJoin(Tabela* tabDest, bool onlyCount);
+	std::string rightJoin(Tabela* tabDest, bool onlyCount);
 #ifdef COUNT_COLISAO
 	int getTotalColisoes();
 

@@ -11,6 +11,7 @@ ResgistroHash::ResgistroHash(unsigned int  key, void* val)
 #ifdef COUNT_COLISAO
 	  colisionCount = 0;
 #endif
+	  this->visited = false;
 }
 //retorna a chave associada ao registro
 unsigned int ResgistroHash::getKey() 
@@ -31,6 +32,14 @@ void ResgistroHash::setValue(void* val)
 ResgistroHash *ResgistroHash::getNext() 
 {
     return next;
+}
+bool ResgistroHash::isVisited()
+{
+	return this->visited;
+}
+void ResgistroHash::setVisited(bool val)
+{
+	this->visited = val;
 }
 //adiciona um registro encadeado em caso de colisão, sempre no ultimo.
 void ResgistroHash::setNext(ResgistroHash *next) 
@@ -94,6 +103,15 @@ void HashMap::setLimite(float limite)
     this->limite = limite;
     maxSize = (int) (tableSize * limite);
 }
+void HashMap::clearVisiteds()
+{
+	ResgistroHash* r =  this->getFirstRegister();
+	while (r)
+	{
+		r->setVisited(false);
+		r = this->getNextRegister(r);
+	}
+}
 //metodo que aumenta o tamanho da lista, caso a ocupção tenha passado do limite.
 //metodo doubra o tamanho da lista mais 1 registro.
 void HashMap::resize() 
@@ -129,11 +147,24 @@ void HashMap::resize()
 void*	HashMap::getByString(std::string key)
 {
 	unsigned int intKey = convertStringToInt(key);
+	ResgistroHash* reg = get(intKey);
+	if (reg)
+	{
+		return reg->getValue();
+	}
+	else
+	  return reg;
+}
+ResgistroHash*	HashMap::getRegisterByString(std::string key)
+{
+	unsigned int intKey = convertStringToInt(key);
+	
 	return get(intKey);
 }
+
 //realiza a busca pela chave calculada internamente e transforma em inteiro.
-//retorna o ponteiro para o objeto armazenado.
-void* HashMap::get(unsigned int  key) 
+//retorna o objeto armazenado.
+ResgistroHash* HashMap::get(unsigned int  key)
 {
     int hash = (key % tableSize);
     if (table[hash] == NULL)
@@ -143,10 +174,8 @@ void* HashMap::get(unsigned int  key)
         ResgistroHash *resgistro = table[hash];
         while (resgistro != NULL && resgistro->getKey() != key)
             resgistro = resgistro->getNext();
-        if (resgistro == NULL)
-            return NULL;
-        else
-            return resgistro->getValue();
+        
+            return resgistro;
     }
 }
 
@@ -188,14 +217,17 @@ void HashMap::insertString(std::string key, void* val)
  }
  //retorna o proximo registro a partir do informado.
  //utilizado para contar o numero de colisões.
+ int val = 0;
   ResgistroHash* HashMap::getNextRegister(ResgistroHash* st)
  {
 	 if (st == NULL)
 		 return NULL;
 	 int idx =0;
 	 if (st->getNext())
+	 {
+		 val++;
 		 return st->getNext();
-
+	 }
 	 idx = (st->getKey() % tableSize)+1;
 	 while (table[idx] == NULL && idx <=tableSize)
 	 {
@@ -203,6 +235,7 @@ void HashMap::insertString(std::string key, void* val)
 	 }
 	 if (idx>=tableSize)
 		 return NULL;
+	 val++;
 	 return table[idx];
 
  }

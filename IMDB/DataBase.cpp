@@ -3,6 +3,8 @@
 #include <ctime>
 #endif
 
+
+
 void Tabela::setNome(std::string val)
 {
 	 this->Nome = val;
@@ -142,7 +144,7 @@ std::string Tabela::innerJoin(Tabela * tabDest, bool onlyCount)
 				chaveBusca += l->getString(idxColuna);
 				x++;
 			}
-			std::string Aux = tabDest->findRow(chaveBusca);
+			std::string Aux = tabDest->findRowInternal(chaveBusca);
 			if (Aux != "")
 			{ 
 				if (onlyCount)
@@ -173,7 +175,161 @@ std::string Tabela::innerJoin(Tabela * tabDest, bool onlyCount)
 	}
 #ifdef MEDIR_TEMPO
 	double duration = (std::clock() - start) / (double)CLOCKS_PER_SEC;
-	std::cout << "tempo de busca na tabela " << " " << duration << " ms" << std::endl;
+	std::cout << "tempo do inner join " << " " << duration << " ms" << std::endl;
+#endif
+	return retorno;
+}
+
+std::string Tabela::leftJoin(Tabela * tabDest, bool onlyCount)
+{
+#ifdef MEDIR_TEMPO
+	std::clock_t start = std::clock();
+#endif
+	std::string retorno;
+	ForeingKey* fk = (ForeingKey*)this->listaFKs->find(tabDest->getNome());
+	int count = 0;
+	if (fk)
+	{
+		ResgistroHash* r = this->indexPK->getFirstRegister();
+		int x = 0;
+		while (r)
+		{
+			LinhaTabela* l = (LinhaTabela*)r->getValue();
+			std::string chaveBusca = "";
+			x = 0;
+			while (x < fk->getKeyCount())
+			{
+				std::string key = fk->getKeys()[x];
+				int idxColuna = this->getColumnIndex(key);
+				chaveBusca += l->getString(idxColuna);
+				x++;
+			}
+			std::string Aux = tabDest->findRowInternal(chaveBusca);
+			
+			if (onlyCount)
+			{
+				count++;
+			}
+			else
+				retorno += l->dataArray + Aux + "\r\n";
+			
+			r = this->indexPK->getNextRegister(r);
+		}
+
+
+		if (onlyCount)
+		{
+
+			retorno = std::to_string(count) + " Registros Encontrados \r\n";
+		}
+
+	}
+	else
+	{
+		ResgistroHash* r = this->indexPK->getFirstRegister();
+		int x = 0;
+		while (r)
+		{
+			LinhaTabela* l = (LinhaTabela*)r->getValue();
+			std::string chaveBusca = "";
+			
+			if (onlyCount)
+			{
+				count++;
+			}
+			else
+				retorno += l->dataArray + std::string("\r\n");
+
+			r = this->indexPK->getNextRegister(r);
+		}
+		if (onlyCount)
+		{
+
+			retorno = std::to_string(count) + " Registros Encontrados \r\n";
+		}
+	}
+#ifdef MEDIR_TEMPO
+	double duration = (std::clock() - start) / (double)CLOCKS_PER_SEC;
+	std::cout << "tempo do left outer join " << " " << duration << " ms" << std::endl;
+#endif
+	return retorno;
+}
+
+std::string Tabela::rightJoin(Tabela * tabDest, bool onlyCount)
+{
+#ifdef MEDIR_TEMPO
+	std::clock_t start = std::clock();
+#endif
+	std::string retorno;
+	ForeingKey* fk = (ForeingKey*)this->listaFKs->find(tabDest->getNome());
+	int count = 0;
+	
+	if (fk)
+	{
+		tabDest->indexPK->clearVisiteds();//marca todos os registros como não visitados
+		ResgistroHash* r = this->indexPK->getFirstRegister();
+		int x = 0;
+		while (r)
+		{
+			LinhaTabela* l = (LinhaTabela*)r->getValue();
+			std::string chaveBusca = "";
+			x = 0;
+			while (x < fk->getKeyCount())
+			{
+				std::string key = fk->getKeys()[x];
+				int idxColuna = this->getColumnIndex(key);
+				chaveBusca += l->getString(idxColuna);
+				x++;
+			}
+			std::string Aux = tabDest->findRowInternal(chaveBusca,true);
+			if (Aux != "")
+			{// conta só os registros em ambas as tabelas.
+				if (onlyCount)
+				{
+					count++;
+				}
+				else
+					retorno += l->dataArray + Aux + "\r\n";
+			}
+			r = this->indexPK->getNextRegister(r);
+		}
+		//itera na tabela da direita para adicionar os registros não contados antes
+		if (tabDest->indexPK)
+		{
+			ResgistroHash* r = tabDest->indexPK->getFirstRegister();
+			while (r)
+			{
+				if (!r->isVisited())
+				{
+					if (onlyCount)
+					{
+						count++;
+					}
+					else
+					{
+						retorno += ((LinhaTabela*)r->getValue())->dataArray;
+						retorno += "\r\n";
+					}
+				}
+				r = tabDest->indexPK->getNextRegister(r);
+			}
+
+		}
+
+		if (onlyCount)
+		{
+
+			retorno = std::to_string(count) + " Registros Encontrados \r\n";
+		}
+
+	}
+	else
+	{
+		
+	}
+#ifdef MEDIR_TEMPO
+	double duration = (std::clock() - start) / (double)CLOCKS_PER_SEC;
+	std::cout << "tempo do right outer join " << " " << duration << " ms" << std::endl;
 #endif
 	return retorno;
 }
@@ -225,7 +381,37 @@ bool Tabela::deleteRow(std::string chave)
 #endif
 	return retorno;
 }
+std::string Tabela::findRowInternal(std::string chave,bool makrRegister)
+{
+	std::string retorno = "";
+	using namespace std;
+	if (this->indexPK == NULL)
+	{
+		cout << "tablea nao possui Primary Key " << endl;
 
+	}
+	else
+	{
+		
+		ResgistroHash* r = this->indexPK->getRegisterByString(chave);
+		
+		
+		if (r)
+		{
+			std::string ret(((LinhaTabela*)r->getValue())->dataArray);
+			if (makrRegister)
+			{
+				r->setVisited(true);
+			}
+			retorno = ret;
+		}
+		else
+		{
+			//	cout <<"chave não encontrada "<<endl;
+		}
+	}
+	return retorno;
+}
 
 //metodo de busca na tabela, atualmente só busca através da chave primára e se foi especificado a primary key corretamente.
 std::string Tabela::findRow(std::string chave)
@@ -233,29 +419,11 @@ std::string Tabela::findRow(std::string chave)
 #ifdef MEDIR_TEMPO
 		 std::clock_t start = std::clock();
 #endif
-std::string retorno = "";
-	using namespace std;
-	if (this->indexPK == NULL)
-	{
-		cout <<"tablea nao possui Primary Key "<<endl;
-		
-	}
-	else
-	{
-		LinhaTabela* l = (LinhaTabela*)this->indexPK->getByString(chave);
-		if (l)
-		{
-			std::string ret(l->dataArray);
-				retorno= ret;
-		}
-		else
-		{
-			//	cout <<"chave não encontrada "<<endl;
-		}
-	}
+		 std::string retorno = "";
+		 retorno=  this->findRowInternal(chave);
 #ifdef MEDIR_TEMPO
 	double duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
-	cout<<"tempo de busca na tabela "<<" "<<duration<<" ms"<<endl;
+	std::cout<<"tempo de busca na tabela "<<" "<<duration<<" ms"<<std::endl;
 #endif
 	return retorno;
 }
