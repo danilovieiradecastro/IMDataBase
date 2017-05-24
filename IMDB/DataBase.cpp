@@ -67,7 +67,7 @@ void Tabela::addRow(std::string row[], int size)
 			data += "\t";
 		idx++;
 	}
-	if (data != "")
+	if (data != "") 
 		this->addRow(data);
 }
 //realiza o select count por alguma coluna
@@ -456,7 +456,7 @@ void Tabela::addRow(std::string row)
 	}
 	rowCount++; 
 }
-
+//remove um registro da tabela
 bool Tabela::deleteRow(std::string chave)
 {
 #ifdef MEDIR_TEMPO
@@ -475,6 +475,7 @@ bool Tabela::deleteRow(std::string chave)
 #endif
 	return retorno;
 }
+//metodo auxiliar interno para buscar a linha sem exibir mensagem
 std::string Tabela::findRowInternal(std::string chave,bool makrRegister)
 {
 	std::string retorno = "";
