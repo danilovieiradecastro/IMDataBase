@@ -366,6 +366,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		
 		
 		case 'X':
+		case 'x':
 			execute = false;
 			break;
 		default:

@@ -70,10 +70,15 @@ void Tabela::addRow(std::string row[], int size)
 	if (data != "")
 		this->addRow(data);
 }
+//realiza o select count por alguma coluna
 int Tabela::countByColumn(std::string columName, std::string keyValue)
 {//realiza o select count por alguma coluna
 #ifdef MEDIR_TEMPO
 	std::clock_t start = std::clock();
+#endif
+#ifdef 	COLETAR_ESTATISTICA
+	int tot = this->getRowCount() / 10;
+	double d = 0;
 #endif
 	int columnsFind = 0;
 	int idxColuna =this->getColumnIndex(columName);
@@ -81,6 +86,7 @@ int Tabela::countByColumn(std::string columName, std::string keyValue)
 	{
 		if (this->indexPK)
 		{
+		
 			if (this->countColunasIdx == 1 && this->idxColunas[0] == idxColuna)
 			{// o usuario está buscando pela PK da tabela.
 
@@ -91,7 +97,10 @@ int Tabela::countByColumn(std::string columName, std::string keyValue)
 			}
 			else
 			{
-
+#ifdef 	COLETAR_ESTATISTICA
+				std::clock_t startMed = std::clock();
+				int totalVer = 0;
+#endif
 				ResgistroHash* r = this->indexPK->getFirstRegister();
 
 				while (r)
@@ -101,6 +110,16 @@ int Tabela::countByColumn(std::string columName, std::string keyValue)
 					{
 						columnsFind++;
 					}
+#ifdef 	COLETAR_ESTATISTICA
+					if (totalVer%tot == 0)
+					{// 10 %
+						double duration = (std::clock() - startMed) / (double)CLOCKS_PER_SEC;
+						d += duration;
+						std::cout << "t " << " " << totalVer <<" " << d << std::endl;
+						startMed = std::clock();
+					}
+					totalVer++;
+#endif
 					r = this->indexPK->getNextRegister(r);
 				}
 			}
@@ -115,21 +134,32 @@ int Tabela::countByColumn(std::string columName, std::string keyValue)
 	return columnsFind;
 
 }
+//cria a estrutura da FK na tabela
 void Tabela::createFK(std::string * colunas, int colCount, Tabela * tabelaDestino)
 {
 	ForeingKey *fk = new ForeingKey(colunas, colCount, tabelaDestino);
 	this->listaFKs->add(tabelaDestino->getNome(), fk);
 }
+
+//metodo que realiza o inner join
 std::string Tabela::innerJoin(Tabela * tabDest, bool onlyCount)
 {
 #ifdef MEDIR_TEMPO
 	std::clock_t start = std::clock();
+#endif
+#ifdef 	COLETAR_ESTATISTICA
+	int tot = this->getRowCount() / 10;
+	double d = 0;
 #endif
 	std::string retorno;
 	ForeingKey* fk = (ForeingKey*)this->listaFKs->find(tabDest->getNome());
 	int count = 0;
 	if (fk)
 	{
+#ifdef 	COLETAR_ESTATISTICA
+		std::clock_t startMed = std::clock();
+		int totalVer = 0;
+#endif
 		ResgistroHash* r = this->indexPK->getFirstRegister();
 		int x = 0;
 		while (r)
@@ -154,6 +184,16 @@ std::string Tabela::innerJoin(Tabela * tabDest, bool onlyCount)
 				else
 		    	retorno += l->dataArray + Aux +"\r\n";
 			}
+#ifdef 	COLETAR_ESTATISTICA
+			if (totalVer%tot == 0)
+			{// 10 %
+				double duration = (std::clock() - startMed) / (double)CLOCKS_PER_SEC;
+				d += duration;
+				std::cout << "t " << " " << totalVer << " " << d << std::endl;
+				startMed = std::clock();
+			}
+			totalVer++;
+#endif
 			r = this->indexPK->getNextRegister(r);
 		}
 
@@ -180,16 +220,25 @@ std::string Tabela::innerJoin(Tabela * tabDest, bool onlyCount)
 	return retorno;
 }
 
+//metodo que realiza o left join
 std::string Tabela::leftJoin(Tabela * tabDest, bool onlyCount)
 {
 #ifdef MEDIR_TEMPO
 	std::clock_t start = std::clock();
+#endif
+#ifdef 	COLETAR_ESTATISTICA
+	int tot = this->getRowCount() / 10;
+	double d = 0;
 #endif
 	std::string retorno;
 	ForeingKey* fk = (ForeingKey*)this->listaFKs->find(tabDest->getNome());
 	int count = 0;
 	if (fk)
 	{
+#ifdef 	COLETAR_ESTATISTICA
+		std::clock_t startMed = std::clock();
+		int totalVer = 0;
+#endif
 		ResgistroHash* r = this->indexPK->getFirstRegister();
 		int x = 0;
 		while (r)
@@ -212,7 +261,16 @@ std::string Tabela::leftJoin(Tabela * tabDest, bool onlyCount)
 			}
 			else
 				retorno += l->dataArray + Aux + "\r\n";
-			
+#ifdef 	COLETAR_ESTATISTICA
+			if (totalVer%tot == 0)
+			{// 10 %
+				double duration = (std::clock() - startMed) / (double)CLOCKS_PER_SEC;
+				d += duration;
+				std::cout << "t " << " " << totalVer << " " << d << std::endl;
+				startMed = std::clock();
+			}
+			totalVer++;
+#endif
 			r = this->indexPK->getNextRegister(r);
 		}
 
@@ -254,11 +312,17 @@ std::string Tabela::leftJoin(Tabela * tabDest, bool onlyCount)
 #endif
 	return retorno;
 }
-
+//metodo que realiza o right join
 std::string Tabela::rightJoin(Tabela * tabDest, bool onlyCount)
 {
 #ifdef MEDIR_TEMPO
 	std::clock_t start = std::clock();
+#endif
+#ifdef 	COLETAR_ESTATISTICA
+	int tot = this->getRowCount() / 10;
+	double d = 0;
+	std::clock_t startMed = std::clock();
+	int totalVer = 0;
 #endif
 	std::string retorno;
 	ForeingKey* fk = (ForeingKey*)this->listaFKs->find(tabDest->getNome());
@@ -291,8 +355,27 @@ std::string Tabela::rightJoin(Tabela * tabDest, bool onlyCount)
 				else
 					retorno += l->dataArray + Aux + "\r\n";
 			}
+#ifdef 	COLETAR_ESTATISTICA
+			if (totalVer%tot == 0)
+			{// 10 %
+				double duration = (std::clock() - startMed) / (double)CLOCKS_PER_SEC;
+				d += duration;
+				std::cout << totalVer << "\t" << d << std::endl;
+				startMed = std::clock();
+			}
+			totalVer++;
+#endif
 			r = this->indexPK->getNextRegister(r);
 		}
+
+#ifdef 	COLETAR_ESTATISTICA
+		tot = tabDest->getRowCount() / 10;
+		d = 0;
+		startMed = std::clock();
+		totalVer = 0;
+		std::cout << "segunda etapa..." << std::endl;
+#endif
+
 		//itera na tabela da direita para adicionar os registros não contados antes
 		if (tabDest->indexPK)
 		{
@@ -311,6 +394,17 @@ std::string Tabela::rightJoin(Tabela * tabDest, bool onlyCount)
 						retorno += "\r\n";
 					}
 				}
+		
+#ifdef 	COLETAR_ESTATISTICA
+				if (totalVer%tot == 0)
+				{// 10 %
+					double duration = (std::clock() - startMed) / (double)CLOCKS_PER_SEC;
+					d += duration;
+					std::cout << totalVer << "\t" << d << std::endl;
+					startMed = std::clock();
+				}
+				totalVer++;
+#endif
 				r = tabDest->indexPK->getNextRegister(r);
 			}
 
